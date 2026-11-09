@@ -1,0 +1,12 @@
+---
+// A page whose content IS a set of equal objects (Semantic Elevation §3, DsPeerSet).
+// Every member raises with its own hairline; no hero, and nothing else may compete on the page.
+interface Props {
+  label: string;
+}
+const { label } = Astro.props;
+---
+
+<ul class="grid gap-4 sm:grid-cols-2" aria-label={label}>
+  <slot />
+</ul>

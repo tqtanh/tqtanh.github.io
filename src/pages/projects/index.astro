@@ -1,0 +1,44 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import PeerSet from '../../components/PeerSet.astro';
+import PeerCard from '../../components/PeerCard.astro';
+import { projects, projectSlug } from '../../data/cv';
+---
+
+<Layout title="Projects" description="Software and research systems I have built.">
+  <PageHeader slot="hero" eyebrow="Selected work"
+    title="Projects"
+    lede="Production systems, research tools and side projects, from laser tag hardware to VR simulators and data visualisation."
+  />
+
+  <!-- The page IS a set of equal objects, so every project raises and nothing else competes. -->
+  <PeerSet label="Projects">
+    {
+      projects.map((p) => (
+        <PeerCard id={projectSlug(p.title)}>
+          <div class="flex items-baseline justify-between gap-4">
+            <h2 class="type-title3 text-ink">{p.title}</h2>
+            <p class="type-footnote shrink-0 text-ink-secondary tabular-nums">{p.period}</p>
+          </div>
+          <p class="type-footnote mt-1 text-ink-secondary">{p.org}</p>
+          <p class="type-body mt-3 text-ink">{p.summary}</p>
+          <ul class="type-footnote mt-2 list-disc space-y-1 pl-5 text-ink-secondary">
+            {p.points.map((pt) => <li>{pt}</li>)}
+          </ul>
+          {p.outcome && <p class="type-label mt-3 text-ink">{p.outcome}</p>}
+          <p class="type-footnote mt-1 text-ink-secondary">{p.tags.join(' · ')}</p>
+          {p.links && (
+            <div class="mt-auto -ml-3 flex flex-wrap gap-x-1 pt-3">
+              {p.links.map((l) => (
+                <a href={l.href} target="_blank" rel="noopener noreferrer" class="btn-plain state-composite">
+                  {l.label}
+                </a>
+              ))}
+            </div>
+          )}
+        </PeerCard>
+      ))
+    }
+  </PeerSet>
+</Layout>

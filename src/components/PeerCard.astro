@@ -1,0 +1,15 @@
+---
+// One member of a PeerSet: raised fill, radius 12, hairline and raised shadow.
+interface Props {
+  id?: string;
+}
+const { id } = Astro.props;
+---
+
+<li
+  id={id}
+  data-ds-surface="raised"
+  class="reveal lift flex flex-col rounded-xl border border-hairline bg-surface-raised p-6 shadow-raised"
+>
+  <slot />
+</li>

@@ -1,0 +1,42 @@
+---
+// The page's one raised object (Semantic Elevation §3, DsHero).
+// Raised fill, radius 12, hairline and raised shadow, inset to the gutter.
+// Use at most one per page. Actions holds at most one primary button.
+interface Props {
+  title: string;
+  chips?: string[];
+}
+const { title, chips = [] } = Astro.props;
+if (chips.length > 2) throw new Error('Hero accepts at most two chips.');
+---
+
+<section
+  data-ds-surface="raised"
+  class="rounded-xl border border-hairline bg-surface-raised p-6 shadow-raised"
+  aria-labelledby="hero-title"
+>
+  <h2 id="hero-title" class="type-title3 text-ink">{title}</h2>
+  {
+    Astro.slots.has('subline') && (
+      <p class="type-footnote mt-1 text-ink-secondary">
+        <slot name="subline" />
+      </p>
+    )
+  }
+  {
+    chips.length > 0 && (
+      <ul class="mt-3 flex flex-wrap gap-2">
+        {chips.map((c) => (
+          <li class="type-caption2 rounded-full bg-surface-sunken px-2.5 py-1 text-ink-secondary">{c}</li>
+        ))}
+      </ul>
+    )
+  }
+  {
+    Astro.slots.has('actions') && (
+      <div class="mt-4 flex flex-wrap items-center gap-3">
+        <slot name="actions" />
+      </div>
+    )
+  }
+</section>

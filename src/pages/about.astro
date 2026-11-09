@@ -1,0 +1,187 @@
+---
+import Layout from '../layouts/Layout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import SectionTitle from '../components/SectionTitle.astro';
+import { site, links } from '../data/site';
+import { bio, experience, education, interests, placeCoords } from '../data/cv';
+
+// "Oct 2023 – Present" → "2023 – Present"; "Feb 2022 – Dec 2022 · Jul 2023 – Nov 2023" → "2022 – 2023".
+const years = (period: string) => {
+  const ys = (period.match(/\d{4}/g) ?? []).map(Number);
+  const start = Math.min(...ys);
+  const end = /present/i.test(period) ? 'Present' : Math.max(...ys);
+  return start === end ? `${start}` : `${start} – ${end}`;
+};
+
+// Roles and degrees grouped by place, for the map markers.
+const places = Object.entries(placeCoords).map(([location, [lat, lon]]) => ({
+  location,
+  lat,
+  lon,
+  items: [
+    ...experience.filter((r) => r.location === location).map((r) => ({ title: r.title, org: r.org, years: years(r.period) })),
+    ...education.filter((e) => e.location === location).map((e) => ({ title: e.degree, org: e.school, years: years(e.period) })),
+  ],
+}));
+
+const channels = [
+  { label: 'Email', value: links.email, href: `mailto:${links.email}` },
+  { label: 'LinkedIn', value: links.linkedin.replace(/^https:\/\/(www\.)?/, ''), href: links.linkedin },
+  { label: 'ResearchGate', value: links.researchgate.replace(/^https:\/\/(www\.)?/, ''), href: links.researchgate },
+  { label: 'GitHub', value: links.github.replace(/^https:\/\//, ''), href: links.github },
+].filter((c) => c.href);
+---
+
+<Layout title="About" description={bio.short}>
+  <PageHeader slot="hero" eyebrow="About" title="About me" lede={site.tagline} />
+
+  <section class="type-body max-w-2xl space-y-4 text-ink">
+    {bio.long.map((p) => <p>{p}</p>)}
+  </section>
+
+  <section id="work" class="mt-16 scroll-mt-20">
+    <SectionTitle title="Where I've worked" />
+
+    <!-- Map of places (Leaflet, loaded when scrolled near). The list below holds the same information. -->
+    <div id="places-map" class="places-map mb-8" role="region" aria-label="Map of places I have worked and studied"></div>
+    <script type="application/json" id="places-data" set:html={JSON.stringify(places)} />
+
+    <ol id="work-list" class="border-t border-hairline">
+      {
+        experience.map((r) => (
+          <li data-place={r.location} class="grid gap-1 border-b border-hairline py-3 last:border-b-0 sm:grid-cols-[1fr_auto] sm:gap-4">
+            <p class="type-footnote text-ink-secondary">
+              <span class="type-label text-ink">{r.title}</span> · {r.org}
+            </p>
+            <p class="type-footnote text-ink-secondary tabular-nums">{years(r.period)}</p>
+          </li>
+        ))
+      }
+    </ol>
+  </section>
+
+  <section class="mt-16">
+    <SectionTitle title="Education" />
+    <ol class="border-t border-hairline">
+      {
+        education.map((e) => (
+          <li data-place={e.location} class="grid gap-1 border-b border-hairline py-3 last:border-b-0 sm:grid-cols-[1fr_auto] sm:gap-4">
+            <p class="type-footnote text-ink-secondary">
+              <span class="type-label text-ink">{e.degree}</span> · {e.school}
+            </p>
+            <p class="type-footnote text-ink-secondary tabular-nums">{years(e.period)}</p>
+          </li>
+        ))
+      }
+    </ol>
+  </section>
+
+  <section class="mt-16">
+    <SectionTitle title="Outside work" />
+    <dl class="grid gap-4 sm:grid-cols-2">
+      {
+        interests.map((i) => (
+          <div>
+            <dt class="type-label text-ink">{i.title}</dt>
+            <dd class="type-footnote mt-1 text-ink-secondary">{i.body}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </section>
+
+  <section id="contact" class="mt-16 scroll-mt-20">
+    <SectionTitle title="Get in touch" />
+    <p class="type-body max-w-2xl text-ink-secondary">
+      Happy to talk about software engineering, XR and HCI research, or collaboration. Email is the fastest way to
+      reach me. Based in {site.location} (NZT, UTC+12/13).
+    </p>
+    <ul class="mt-6 border-t border-hairline">
+      {
+        channels.map((c) => (
+          <li class="border-b border-hairline last:border-b-0">
+            <a
+              href={c.href}
+              target={c.href.startsWith('mailto:') ? undefined : '_blank'}
+              rel="noopener noreferrer"
+              class="state-composite flex min-h-11 items-center justify-between gap-4 px-3 py-3"
+            >
+              <span class="type-label text-ink">{c.label}</span>
+              <span class="type-footnote truncate text-accent-text">{c.value}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+</Layout>
+
+<script>
+  type Place = { location: string; lat: number; lon: number; items: { title: string; org: string; years: string }[] };
+
+  const el = document.getElementById('places-map');
+  const places: Place[] = JSON.parse(document.getElementById('places-data')?.textContent ?? '[]');
+  const rows = [...document.querySelectorAll<HTMLElement>('li[data-place]')];
+  const dim = (location: string | null) =>
+    rows.forEach((li) => li.toggleAttribute('data-dim', location !== null && li.dataset.place !== location));
+
+  const esc = (s: string) =>
+    s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
+
+  async function mount(container: HTMLElement) {
+    const [{ default: L }] = await Promise.all([import('leaflet'), import('leaflet/dist/leaflet.css')]);
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const map = L.map(container, {
+      scrollWheelZoom: false, // never hijack page scrolling
+      dragging: !L.Browser.mobile, // one-finger drags scroll the page on phones
+      zoomAnimation: !reduce,
+      fadeAnimation: !reduce,
+      markerZoomAnimation: !reduce,
+    });
+
+    // OpenStreetMap standard tiles; tinted with CSS (.places-map) to match light and dark themes.
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    }).addTo(map);
+
+    const markers = new Map<string, L.CircleMarker>();
+    for (const p of places) {
+      const city = p.location.split(',')[0];
+      const items = p.items
+        .map((i) => `<li><strong>${esc(i.title)}</strong> · ${esc(i.org)} <span>${esc(i.years)}</span></li>`)
+        .join('');
+      const m = L.circleMarker([p.lat, p.lon], { radius: 7, weight: 2, className: 'places-marker', fillOpacity: 0.9 })
+        .addTo(map)
+        .bindTooltip(esc(city), { direction: 'top', offset: [0, -8] })
+        .bindPopup(`<p class="places-popup-title">${esc(p.location)}</p><ul class="places-popup-list">${items}</ul>`);
+      m.on('mouseover', () => dim(p.location));
+      m.on('mouseout', () => dim(null));
+      m.on('popupopen', () => dim(p.location));
+      m.on('popupclose', () => dim(null));
+      markers.set(p.location, m);
+    }
+    map.fitBounds(L.latLngBounds(places.map((p) => [p.lat, p.lon] as [number, number])), { paddingTopLeft: [70, 40], paddingBottomRight: [40, 40] });
+
+    // Hovering a role or degree highlights its marker.
+    rows.forEach((li) => {
+      const m = markers.get(li.dataset.place ?? '');
+      if (!m) return;
+      li.addEventListener('pointerenter', () => m.setRadius(11).openTooltip());
+      li.addEventListener('pointerleave', () => m.setRadius(7).closeTooltip());
+    });
+  }
+
+  if (el) {
+    // Load Leaflet and tiles only when the map is about to scroll into view.
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        io.disconnect();
+        mount(el).catch(() => el.remove());
+      },
+      { rootMargin: '300px' },
+    );
+    io.observe(el);
+  }
+</script>

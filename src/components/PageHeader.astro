@@ -1,0 +1,18 @@
+---
+// Full-bleed header band for inner pages. Place with slot="hero".
+interface Props {
+  title: string;
+  eyebrow?: string;
+  lede?: string;
+}
+const { title, eyebrow, lede } = Astro.props;
+---
+
+<header class="backdrop border-b border-hairline" data-ds-surface="canvas">
+  <div class="mx-auto max-w-4xl px-4 py-14 sm:px-6 sm:py-20">
+    {eyebrow && <p class="type-eyebrow">{eyebrow}</p>}
+    <h1 class="type-largetitle mt-3 text-ink">{title}</h1>
+    {lede && <p class="type-body mt-4 max-w-2xl text-ink-secondary">{lede}</p>}
+    <slot />
+  </div>
+</header>

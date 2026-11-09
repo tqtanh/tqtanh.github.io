@@ -1,0 +1,34 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import { getPosts, formatDate } from '../../lib/posts';
+
+const posts = await getPosts();
+---
+
+<Layout title="Blog" description="Notes on engineering, XR research and where technology is heading.">
+  <PageHeader slot="hero" eyebrow="Blog" title="Writing" lede="Notes on engineering, XR research and where technology is heading." />
+
+  {
+    posts.length === 0 ? (
+      <p class="type-body text-ink-secondary">No posts yet.</p>
+    ) : (
+      <ul class="border-t border-hairline">
+        {posts.map((post) => (
+          <li class="border-b border-hairline py-4 last:border-b-0">
+            <p class="type-footnote text-ink-secondary tabular-nums">
+              <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
+              {post.data.draft && <> · Draft</>}
+            </p>
+            <h2 class="type-title3 mt-1 text-ink">
+              <a href={`/blog/${post.id}/`} class="rounded hover:underline">
+                {post.data.title}
+              </a>
+            </h2>
+            <p class="type-body mt-1 text-ink-secondary">{post.data.description}</p>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+</Layout>

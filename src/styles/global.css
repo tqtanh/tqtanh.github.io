@@ -1,0 +1,561 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+/*
+ * Design tokens follow Semantic Elevation v2.7.
+ * Elevation is reserved for objects of action; grouping is done with
+ * headings, hairlines and whitespace. Components use the generic tokens;
+ * themes and surfaces redefine them.
+ */
+
+/* Only used for the theme-toggle icons. Colours switch through tokens, not dark: variants. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  /* §1 Surface ladder */
+  --ds-surface-rest: #f9fcff;
+  --ds-surface-canvas: #eef0f4;
+  --ds-surface-sunken: #eaedf1;
+  --ds-surface-raised: #f9fcff;
+  --ds-surface-overlay: #f9fcff;
+
+  /* §8 Colour */
+  --ds-color-text-primary: #17181b;
+  --ds-color-text-secondary-rest: #6f7275;
+  --ds-color-text-secondary-well: #515356;
+  --ds-color-text-on-fill: #ffffff;
+  --ds-color-border-rest: #dde0e4;
+  --ds-color-border-well: #d8dee6;
+  --ds-color-border-selected: #1e6ceb;
+  --ds-color-accent-fill: #1e6ceb;
+  --ds-color-accent-text: #0051ce;
+  --ds-color-accent-tint: rgba(30, 108, 235, 0.08);
+  --ds-color-danger-text: #ad0000;
+  --ds-color-success-fill: #4ecf8d;
+  --ds-color-state-hover: rgba(0, 0, 0, 0.04);
+  --ds-color-state-active: rgba(0, 0, 0, 0.08);
+  --ds-shadow-raised: 0 1px 2px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.08);
+  --ds-shadow-overlay: 0 8px 24px rgba(0, 0, 0, 0.16), 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  /* Stacking */
+  --ds-z-sticky: 100;
+  --ds-z-popover: 200;
+
+  /* §13 Motion */
+  --ds-motion-medium: 200ms;
+
+  color-scheme: light;
+}
+
+:root.dark {
+  --ds-surface-rest: #1e2025;
+  --ds-surface-canvas: #121417;
+  --ds-surface-sunken: #17191d;
+  --ds-surface-raised: #23262b;
+  --ds-surface-overlay: #2a2d33;
+
+  --ds-color-text-primary: #eef0f3;
+  --ds-color-text-secondary-rest: #a3a7ad;
+  --ds-color-text-secondary-well: #b3b7bd;
+  --ds-color-border-rest: #2e3238;
+  --ds-color-border-well: #2a2e34;
+  --ds-color-accent-text: #8ab4ff;
+  --ds-color-accent-tint: rgba(30, 108, 235, 0.2);
+  --ds-color-danger-text: #ff8a80;
+  --ds-color-state-hover: rgba(255, 255, 255, 0.04);
+  --ds-color-state-active: rgba(255, 255, 255, 0.08);
+  --ds-shadow-raised: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.32);
+  --ds-shadow-overlay: 0 8px 24px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
+
+  color-scheme: dark;
+}
+
+/*
+ * Context-scoped tokens. Every surface sets ALL of them, in zero-specificity
+ * blocks, so nesting resolves to the nearest surface at any depth.
+ */
+:root,
+:where([data-ds-surface='rest'], [data-ds-surface='raised'], [data-ds-surface='overlay']) {
+  --ds-color-text-secondary: var(--ds-color-text-secondary-rest);
+  --ds-color-hairline: var(--ds-color-border-rest);
+  --ds-control-surface: var(--ds-surface-sunken);
+  --ds-control-border: transparent;
+}
+:where([data-ds-surface='canvas']) {
+  --ds-color-text-secondary: var(--ds-color-text-secondary-well);
+  --ds-color-hairline: var(--ds-color-border-rest);
+  --ds-control-surface: var(--ds-surface-sunken);
+  --ds-control-border: transparent;
+}
+:where([data-ds-surface='well']) {
+  --ds-color-text-secondary: var(--ds-color-text-secondary-well);
+  --ds-color-hairline: var(--ds-color-border-well);
+  --ds-control-surface: var(--ds-surface-rest);
+  --ds-control-border: var(--ds-color-border-well);
+}
+
+@theme inline {
+  --font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Playfair Display", Georgia, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  /* §7: one breakpoint at 600 px */
+  --breakpoint-sm: 600px;
+
+  --color-surface-rest: var(--ds-surface-rest);
+  --color-surface-canvas: var(--ds-surface-canvas);
+  --color-surface-sunken: var(--ds-surface-sunken);
+  --color-surface-raised: var(--ds-surface-raised);
+  --color-surface-overlay: var(--ds-surface-overlay);
+  --color-ink: var(--ds-color-text-primary);
+  --color-ink-secondary: var(--ds-color-text-secondary);
+  --color-on-fill: var(--ds-color-text-on-fill);
+  --color-hairline: var(--ds-color-hairline);
+  --color-border-selected: var(--ds-color-border-selected);
+  --color-accent-fill: var(--ds-color-accent-fill);
+  --color-accent-text: var(--ds-color-accent-text);
+  --color-accent-tint: var(--ds-color-accent-tint);
+  --color-danger-text: var(--ds-color-danger-text);
+  --color-success-fill: var(--ds-color-success-fill);
+
+  --shadow-raised: var(--ds-shadow-raised);
+  --shadow-overlay: var(--ds-shadow-overlay);
+}
+
+/* §7 Type: semantic names, never ramp steps. */
+@utility type-largetitle {
+  font-family: var(--font-display);
+  /* Titles always use lining figures, whatever the display face defaults to. */
+  font-variant-numeric: lining-nums;
+  /* Playfair needs more size than v2.7's 36 px to hold its weight. */
+  font-size: 48px;
+  line-height: 54px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  @media (width < 600px) {
+    font-size: 34px;
+    line-height: 40px;
+  }
+}
+@utility type-title3 {
+  font-family: var(--font-display);
+  /* Titles always use lining figures, whatever the display face defaults to. */
+  font-variant-numeric: lining-nums;
+  font-size: 24px;
+  line-height: 30px;
+  font-weight: 700;
+}
+
+/*
+ * Expressive layer for the personal site. These go beyond v2.7 on purpose:
+ * a display size, a tagline, eyebrows and a soft backdrop for page headers.
+ */
+@utility type-display {
+  font-family: var(--font-display);
+  font-variant-numeric: lining-nums;
+  font-size: 72px;
+  line-height: 76px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  @media (width < 600px) {
+    font-size: 44px;
+    line-height: 48px;
+  }
+}
+@utility type-tagline {
+  font-family: var(--font-display);
+  font-size: 28px;
+  line-height: 36px;
+  font-weight: 600;
+  @media (width < 600px) {
+    font-size: 22px;
+    line-height: 30px;
+  }
+}
+@utility type-stat {
+  font-family: var(--font-display);
+  font-variant-numeric: lining-nums tabular-nums;
+  font-size: 44px;
+  line-height: 48px;
+  font-weight: 700;
+}
+@utility type-eyebrow {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ds-color-accent-text);
+}
+
+/*
+ * Header bands: soft accent glow plus a perspective grid "floor" that recedes
+ * toward a horizon (XR / holodeck feel). Inner pages get a faint, still grid;
+ * add `backdrop-live` (home hero) for stronger lines that drift toward the viewer.
+ */
+@utility backdrop {
+  --grid-line: color-mix(in srgb, var(--ds-color-accent-fill) 18%, transparent);
+  --grid-size: 48px;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    radial-gradient(60% 45% at 50% 100%, var(--ds-color-accent-tint), transparent 75%),
+    radial-gradient(55% 90% at 90% 0%, var(--ds-color-accent-tint), transparent 70%),
+    var(--ds-surface-canvas);
+  &::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    left: -50%;
+    bottom: 0;
+    width: 200%;
+    height: 75%;
+    pointer-events: none;
+    background-image:
+      linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+    background-size: var(--grid-size) var(--grid-size);
+    background-position: 50% 0;
+    transform-origin: 50% 100%;
+    transform: perspective(360px) rotateX(64deg);
+    mask-image: linear-gradient(to top, black 15%, transparent 70%);
+  }
+}
+
+@utility backdrop-live {
+  --grid-line: color-mix(in srgb, var(--ds-color-accent-fill) 32%, transparent);
+  &::before {
+    height: 85%;
+    @media (prefers-reduced-motion: no-preference) {
+      animation: grid-drift 4s linear infinite;
+    }
+  }
+}
+
+/* Babylon.js canvas behind the home hero; fades in over the CSS grid once ready. */
+.hero-scene {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 600ms ease;
+}
+.hero-scene.is-ready {
+  opacity: 1;
+}
+
+/* Invisible hover targets over the hero motifs, each with a caption pill. */
+.hero-scene-labels {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  display: none;
+}
+.hero-scene-labels.is-ready {
+  display: block;
+}
+.hero-scene-target {
+  position: absolute;
+  left: 0;
+  top: 0;
+  border-radius: 9999px;
+  pointer-events: auto;
+  cursor: pointer;
+  will-change: transform;
+}
+.hero-scene-target[hidden] {
+  display: none;
+}
+.hero-scene-caption {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 6px);
+  translate: -50% 4px;
+  white-space: nowrap;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  border: 1px solid var(--ds-color-hairline);
+  background: var(--ds-surface-raised);
+  color: var(--ds-color-text-primary);
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 600;
+  box-shadow: var(--ds-shadow-raised, 0 2px 8px rgb(0 0 0 / 0.12));
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 150ms ease,
+    translate 150ms ease;
+}
+.hero-scene-caption small {
+  font-weight: 400;
+  color: var(--ds-color-text-secondary);
+}
+.hero-scene-target:hover .hero-scene-caption {
+  opacity: 1;
+  translate: -50% 0;
+}
+
+/* About: places map (Leaflet). Contained so its panes stay under the sticky header. */
+.places-map {
+  position: relative;
+  z-index: 0;
+  isolation: isolate;
+  height: 380px;
+  border-radius: 12px;
+  border: 1px solid var(--ds-color-hairline);
+  overflow: hidden;
+  background: var(--ds-surface-canvas);
+  font: inherit;
+}
+@media (width < 640px) {
+  .places-map {
+    height: 300px;
+  }
+}
+.places-map .leaflet-tile-pane {
+  filter: grayscale(0.85) contrast(0.9) brightness(1.04);
+}
+.dark .places-map .leaflet-tile-pane {
+  filter: grayscale(1) invert(1) brightness(0.85) contrast(0.9);
+}
+.places-map .leaflet-bar a {
+  background: var(--ds-surface-raised);
+  color: var(--ds-color-text-primary);
+  border-color: var(--ds-color-hairline);
+}
+.places-map .leaflet-bar a:hover {
+  background: var(--ds-surface-canvas);
+}
+.places-map .places-marker {
+  stroke: var(--ds-surface-rest);
+  fill: var(--ds-color-accent-fill);
+}
+.places-map .leaflet-popup-content-wrapper,
+.places-map .leaflet-popup-tip,
+.places-map .leaflet-tooltip {
+  background: var(--ds-surface-raised);
+  color: var(--ds-color-text-primary);
+  box-shadow: var(--ds-shadow-raised);
+  border-color: var(--ds-color-hairline);
+}
+.places-map .leaflet-tooltip {
+  font-size: 12px;
+  font-weight: 600;
+}
+.places-map .leaflet-tooltip-top::before {
+  border-top-color: var(--ds-surface-raised);
+}
+.places-map .leaflet-popup-content {
+  margin: 12px 14px;
+  font-family: inherit;
+}
+.places-popup-title {
+  margin: 0 0 6px !important;
+  font-weight: 700;
+  font-size: 13px;
+}
+.places-popup-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+  line-height: 18px;
+}
+.places-popup-list li + li {
+  margin-top: 4px;
+}
+.places-popup-list span {
+  color: var(--ds-color-text-secondary);
+  white-space: nowrap;
+}
+.places-map.leaflet-container .leaflet-control-attribution {
+  background: color-mix(in srgb, var(--ds-surface-rest) 80%, transparent);
+  color: var(--ds-color-text-secondary);
+}
+.places-map.leaflet-container .leaflet-control-attribution a {
+  color: var(--ds-color-accent-text);
+}
+li[data-place] {
+  transition: opacity 150ms ease;
+}
+li[data-dim] {
+  opacity: 0.35;
+}
+
+/* Arriving on /projects/#slug from the hero: ring the targeted card. */
+li:target {
+  scroll-margin-top: 5rem;
+  outline: 2px solid var(--ds-color-accent-fill);
+  outline-offset: 4px;
+}
+
+@keyframes grid-drift {
+  from {
+    background-position: 50% 0;
+  }
+  to {
+    background-position: 50% var(--grid-size);
+  }
+}
+
+/* Cards lift on hover; shadow only, and only when motion is welcome. */
+@utility lift {
+  @media (prefers-reduced-motion: no-preference) {
+    transition:
+      transform var(--ds-motion-medium) ease,
+      box-shadow var(--ds-motion-medium) ease;
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--ds-shadow-overlay);
+    }
+  }
+}
+
+/* Scroll-in reveal. Content stays visible without JS or with reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  .js .reveal {
+    opacity: 0;
+    transform: translateY(16px);
+    transition:
+      opacity 600ms ease,
+      transform 600ms ease;
+    transition-delay: var(--delay, 0ms);
+  }
+  .js .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+}
+@utility type-body {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
+}
+@utility type-control {
+  font-size: 16px;
+  line-height: 22px;
+  font-weight: 500;
+}
+@utility type-label {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+}
+@utility type-footnote {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+}
+@utility type-caption1 {
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 400;
+}
+@utility type-caption2 {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+@utility type-overline {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+@utility type-code {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+}
+
+/* §9 State tints are composites over whatever fill is already there. */
+@utility state-composite {
+  &:hover {
+    background-image: linear-gradient(var(--ds-color-state-hover), var(--ds-color-state-hover));
+  }
+  &:active {
+    background-image: linear-gradient(var(--ds-color-state-active), var(--ds-color-state-active));
+  }
+}
+
+/* §4 Button tiers. There is no bordered secondary button. */
+@utility btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  /* Transparent border keeps the button visible under forced colours. */
+  border: 1px solid transparent;
+  background-color: var(--ds-color-accent-fill);
+  color: var(--ds-color-text-on-fill);
+  font-size: 16px;
+  line-height: 22px;
+  font-weight: 500;
+}
+@utility btn-plain {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  color: var(--ds-color-accent-text);
+  font-size: 16px;
+  line-height: 22px;
+  font-weight: 500;
+}
+
+@layer base {
+  body {
+    background-color: var(--ds-surface-rest);
+    color: var(--ds-color-text-primary);
+  }
+
+  /* Focus-visible: 2 px accent outline, 2 px offset, on every target. */
+  :focus-visible {
+    outline: 2px solid var(--ds-color-accent-fill);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background-color: var(--ds-color-accent-tint);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+}
+
+/* Blog prose uses the same tokens as everything else. */
+.prose {
+  --tw-prose-body: var(--ds-color-text-primary);
+  --tw-prose-headings: var(--ds-color-text-primary);
+  --tw-prose-lead: var(--ds-color-text-secondary);
+  --tw-prose-links: var(--ds-color-accent-text);
+  --tw-prose-bold: var(--ds-color-text-primary);
+  --tw-prose-counters: var(--ds-color-text-secondary);
+  --tw-prose-bullets: var(--ds-color-text-secondary);
+  --tw-prose-hr: var(--ds-color-hairline);
+  --tw-prose-quotes: var(--ds-color-text-primary);
+  --tw-prose-quote-borders: var(--ds-color-hairline);
+  --tw-prose-captions: var(--ds-color-text-secondary);
+  --tw-prose-code: var(--ds-color-text-primary);
+  --tw-prose-pre-code: var(--ds-color-text-primary);
+  --tw-prose-pre-bg: var(--ds-surface-sunken);
+  --tw-prose-th-borders: var(--ds-color-hairline);
+  --tw-prose-td-borders: var(--ds-color-hairline);
+}

@@ -1,0 +1,195 @@
+---
+import fs from 'node:fs';
+import Layout from '../layouts/Layout.astro';
+import SectionTitle from '../components/SectionTitle.astro';
+import PublicationItem from '../components/PublicationItem.astro';
+import SocialLinks from '../components/SocialLinks.astro';
+import { site, links } from '../data/site';
+import { bio, pillars, highlights, experience, publications } from '../data/cv';
+import { getPosts, hasPublishedPosts, formatDate } from '../lib/posts';
+
+const hasPhoto = fs.existsSync(`public${site.photoPath}`);
+const current = experience[0];
+const recentPubs = publications.slice(0, 3);
+const showWriting = await hasPublishedPosts();
+const posts = showWriting ? (await getPosts()).slice(0, 3) : [];
+---
+
+<Layout>
+  <!-- Hero band -->
+  <section slot="hero" class="backdrop backdrop-live border-b border-hairline" data-ds-surface="canvas">
+    <!-- Babylon.js scene; the CSS grid underneath shows until it is ready, or if WebGL is unavailable. -->
+    <canvas id="hero-scene" class="hero-scene" aria-hidden="true"></canvas>
+    <!-- Hover targets for the project motifs; positioned by the scene each frame. Mouse-only decoration:
+         every project is also reachable from the Projects page. -->
+    <div id="hero-scene-labels" class="hero-scene-labels" aria-hidden="true"></div>
+    <div
+      class="mx-auto grid max-w-4xl items-center gap-12 px-4 py-16 sm:grid-cols-[1fr_auto] sm:px-6 sm:py-24"
+    >
+      <div class="reveal">
+        <p class="type-eyebrow">Software engineer · XR researcher · {site.location}</p>
+        <h1 class="type-display mt-4 text-ink">
+          Tanh Quang<br /><span class="text-accent-text italic">Tran</span>
+        </h1>
+        <p class="type-tagline mt-6 text-ink">
+          Engineer <em class="text-accent-text">first</em>, researcher <em class="text-accent-text">second</em>,
+          futurist <em class="text-accent-text">third</em>.
+        </p>
+        <p class="type-body mt-6 max-w-xl text-ink-secondary">{bio.short}</p>
+        <div class="mt-8 flex flex-wrap items-center gap-3">
+          <a href={`mailto:${links.email}`} class="btn-primary state-composite">Email me</a>
+          <a href="/research/" class="btn-plain state-composite">Explore my research <span aria-hidden="true">→</span></a>
+          <SocialLinks />
+        </div>
+      </div>
+
+      <div class="reveal relative mx-auto hidden sm:block" style="--delay: 150ms">
+        <div class="absolute -inset-4 rotate-6 rounded-3xl border-2 border-accent-fill/40" aria-hidden="true"></div>
+        {
+          hasPhoto ? (
+            <img
+              src={site.photoPath}
+              alt={site.name}
+              width="224"
+              height="224"
+              class="relative h-56 w-56 rounded-3xl object-cover shadow-overlay"
+            />
+          ) : (
+            <div
+              class="relative flex h-56 w-56 items-center justify-center rounded-3xl bg-accent-fill font-display text-[72px] font-bold text-on-fill italic shadow-overlay"
+              aria-hidden="true"
+            >
+              TQT
+            </div>
+          )
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Highlights -->
+  <section
+    class="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-4"
+    aria-label="Highlights"
+  >
+    {
+      highlights.map((h, i) => (
+        <div class="reveal border-l-2 border-accent-fill pl-4" style={`--delay: ${i * 80}ms`}>
+          <p class="type-stat text-ink">{h.value}</p>
+          <p class="type-footnote mt-2 text-ink-secondary">{h.label}</p>
+        </div>
+      ))
+    }
+  </section>
+
+  <!-- Engineer, researcher, futurist -->
+  <section class="mt-20">
+    <SectionTitle eyebrow="In that order" title="Three ways I work" />
+    <ul class="grid gap-4 sm:grid-cols-3">
+      {
+        pillars.map((p, i) => (
+          <li
+            data-ds-surface="raised"
+            class="reveal lift flex flex-col rounded-xl border border-hairline bg-surface-raised p-6 shadow-raised"
+            style={`--delay: ${i * 100}ms`}
+          >
+            <p class="font-display text-[44px] leading-none font-bold text-accent-text italic">{p.index}</p>
+            <h3 class="type-title3 mt-4 text-ink">{p.title}</h3>
+            <p class="type-footnote mt-2 flex-1 text-ink-secondary">{p.body}</p>
+            {(showWriting || p.href !== '/blog/') && (
+              <a href={p.href} class="btn-plain state-composite mt-4 -ml-3 self-start">
+                {p.cta} <span aria-hidden="true">→</span>
+              </a>
+            )}
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section class="reveal mt-20">
+    <SectionTitle eyebrow="Now" title={current.org} href="/about/#work" linkLabel="Where I've worked" />
+    <p class="type-body text-ink-secondary">
+      <span class="text-ink">{current.title}</span> since {current.period.split(' – ')[0]}. {current.points[0]}
+    </p>
+  </section>
+
+  <section class="reveal mt-20">
+    <SectionTitle eyebrow="Research" title="Recent publications" href="/research/" linkLabel="All publications" />
+    <ul class="border-t border-hairline">
+      {recentPubs.map((pub) => <PublicationItem pub={pub} />)}
+    </ul>
+  </section>
+
+  {
+    posts.length > 0 && (
+      <section class="reveal mt-20">
+        <SectionTitle eyebrow="Blog" title="Writing" href="/blog/" linkLabel="All posts" />
+        <ul class="border-t border-hairline">
+          {posts.map((post) => (
+            <li class="flex flex-col gap-1 border-b border-hairline py-4 last:border-b-0 sm:flex-row sm:items-baseline sm:justify-between">
+              <a href={`/blog/${post.id}/`} class="type-control rounded text-ink hover:underline">
+                {post.data.title}
+              </a>
+              <time datetime={post.data.date.toISOString()} class="type-footnote text-ink-secondary tabular-nums">
+                {formatDate(post.data.date)}
+              </time>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+
+  <!-- Closing call to action on an inverse surface -->
+  <section
+    class="reveal relative mt-24 overflow-hidden rounded-2xl bg-ink p-8 text-surface-rest shadow-overlay sm:p-12"
+  >
+    <div
+      class="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-accent-fill/40 blur-3xl"
+      aria-hidden="true"
+    >
+    </div>
+    <p class="type-eyebrow relative !text-surface-rest/70">Get in touch</p>
+    <h2 class="type-largetitle relative mt-3 max-w-xl">
+      Let's talk engineering, <span class="italic">XR</span> or research.
+    </h2>
+    <p class="type-body relative mt-4 max-w-xl opacity-80">
+      Happy to talk about software engineering, research or collaboration. Email is the fastest way to reach me.
+    </p>
+    <div class="relative mt-8 flex flex-wrap items-center gap-3">
+      <a href={`mailto:${links.email}`} class="btn-primary state-composite">Email me</a>
+      <a href="/about/#contact" class="btn-plain state-composite !text-surface-rest underline-offset-4 hover:underline"
+        >Other ways to connect</a
+      >
+    </div>
+  </section>
+</Layout>
+
+<script>
+  const canvas = document.getElementById('hero-scene') as HTMLCanvasElement | null;
+  const hasWebGL = (() => {
+    try {
+      return !!document.createElement('canvas').getContext('webgl2');
+    } catch {
+      return false;
+    }
+  })();
+
+  if (canvas && hasWebGL) {
+    const load = () =>
+      import('../lib/hero-scene')
+        .then(({ mountHeroScene }) =>
+          mountHeroScene(canvas, {
+            animate: !matchMedia('(prefers-reduced-motion: reduce)').matches,
+            labels: document.getElementById('hero-scene-labels'),
+          }),
+        )
+        .then(() => {
+          canvas.classList.add('is-ready');
+          document.getElementById('hero-scene-labels')?.classList.add('is-ready');
+        })
+        .catch(() => {}); // keep the CSS grid fallback
+    'requestIdleCallback' in window ? requestIdleCallback(load, { timeout: 1500 }) : setTimeout(load, 300);
+  }
+</script>

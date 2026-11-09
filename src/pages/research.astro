@@ -1,0 +1,52 @@
+---
+import Layout from '../layouts/Layout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import SectionTitle from '../components/SectionTitle.astro';
+import PublicationItem from '../components/PublicationItem.astro';
+import { links } from '../data/site';
+import { publications, researchThemes } from '../data/cv';
+
+const years = [...new Set(publications.map((p) => p.year))].sort((a, b) => b - a);
+---
+
+<Layout title="Research" description="Publications on presence, locomotion and interaction in virtual and mixed reality.">
+  <PageHeader slot="hero" eyebrow="Research"
+    title="Research"
+    lede="Human-computer interaction in virtual and mixed reality: how people feel present, how they move, and how they interact."
+  >
+    <a href={links.researchgate} target="_blank" rel="noopener noreferrer" class="btn-plain state-composite mt-2 -ml-3"
+      >ResearchGate profile</a
+    >
+  </PageHeader>
+
+  <section class="grid gap-8 sm:grid-cols-3 sm:gap-6" aria-label="Research themes">
+    {
+      researchThemes.map((t) => (
+        <div>
+          <h2 class="type-label text-ink">{t.title}</h2>
+          <p class="type-footnote mt-1 text-ink-secondary">{t.body}</p>
+        </div>
+      ))
+    }
+  </section>
+
+  <section class="mt-16">
+    <SectionTitle title={`Publications (${publications.length})`} />
+    <div class="border-t border-hairline">
+      {
+        years.map((y) => (
+          <div class="grid border-b border-hairline last:border-b-0 sm:grid-cols-[6rem_1fr]">
+            <h3 class="type-label pt-4 text-ink-secondary tabular-nums">{y}</h3>
+            <ul>
+              {publications
+                .filter((p) => p.year === y)
+                .map((pub) => (
+                  <PublicationItem pub={pub} />
+                ))}
+            </ul>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+</Layout>

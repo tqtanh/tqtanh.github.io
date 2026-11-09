@@ -1,0 +1,48 @@
+---
+import { me, type Publication } from '../data/cv';
+
+interface Props {
+  pub: Publication;
+}
+const { pub } = Astro.props;
+const href = pub.doi ? `https://doi.org/${pub.doi}` : pub.url;
+---
+
+<li class="border-b border-hairline py-4 last:border-b-0">
+  <p class="type-caption2 text-ink-secondary">{pub.short} · {pub.type}</p>
+  <h3 class="type-control mt-1 text-ink">
+    {
+      href ? (
+        <a href={href} target="_blank" rel="noopener noreferrer" class="rounded hover:underline">
+          {pub.title}
+        </a>
+      ) : (
+        pub.title
+      )
+    }
+  </h3>
+  <p class="type-footnote mt-1 text-ink-secondary">
+    {
+      pub.authors.map((a, i) => (
+        <>
+          {a === me ? <strong class="font-semibold text-ink">{a}</strong> : a}
+          {i < pub.authors.length - 1 && ', '}
+        </>
+      ))
+    }
+  </p>
+  <p class="type-footnote text-ink-secondary">{pub.venue}</p>
+  {
+    pub.doi && (
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="type-code mt-1 inline-block rounded text-accent-text hover:underline"
+        aria-label={`DOI ${pub.doi}, opens the paper`}
+      >
+        doi:{pub.doi}
+      </a>
+    )
+  }
+</li>
